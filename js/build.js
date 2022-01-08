@@ -7675,6 +7675,37 @@ game = {
     b()
   },
   showScreen: function(a, b, c) {
+    if (a == 'game') {
+      const container_ = document.body;
+      container_.requestPointerLock = container_.requestPointerLock ||
+        container_.mozRequestPointerLock ||
+        container_.webkitRequestPointerLock;
+
+      container_.onmousedown = function(e) {
+        if (e.button !== 0)
+          return;
+        container_.requestPointerLock();
+      }
+
+
+      const div_ = 8;
+      container_.onmousemove = function(e) {
+        if (e.movementX == 0)
+          return;
+        if (e.movementX > 0) {
+          for (var i = 0; i < e.movementX / div_; i++) {
+            game.client.right();
+          }
+          return;
+        }
+        if (e.movementX < 0) {
+          for (var i = 0; i < e.movementX / -div_; i++) {
+            game.client.left();
+          }
+          return;
+        }
+      }
+    }
     game.trackPage(a);
     game.requestHTML(a, function() {
       var d = document.getElementById(a);
@@ -7690,6 +7721,11 @@ game = {
     })
   },
   hideScreen: function(a, b) {
+    if (a == 'game') {
+      document.body.onmousedown = null;
+      document.body.onmouseup = null;
+      document.body.onmousemove = null;
+    }
     var c = document.getElementById(a);
     c && (c.className = c.className.replace(" fadein", ""), game.activeScreen = null, b && (game.timeout = setTimeout(b, 1E3)), window.onmouseup = null)
   },
@@ -8078,7 +8114,7 @@ game = {
       b.style.top = 44 * b.cursorIndex + "px";
       var c = document.querySelectorAll("#detail .options tr");
       window.onmouseup = function(a) {
-        if ("detail" == game.activeScreen && (a || (a = window.event), 0 != a.button)) window.onkeydown =
+        if ("detail" == game.activeScreen && (a || (a = window.event), 0 != a.button)) window.onkeydown = window.onkeyup =
           window.onclick = null, audio.playSound("escpressed"), game.hideScreen("detail", game.loop ? game.gameMenu : game.menu)
       };
       for (var d = 0; d < c.length; d++) {
@@ -8963,6 +8999,7 @@ game = {
     game.showScreen("gamemenu", null, function() {
       document.body.parentNode.style.backgroundColor = "#880000";
       document.body.style.backgroundColor = "#880000";
+      document.body.onmousedown = null;
       "wonderin" != audio.currentMusic && (audio.stopMusic(), audio.playMusic("wonderin"));
       var a = document.getElementById("gamemenucursor");
       if (void 0 == a.cursorIndex || null == a.cursorIndex) a.cursorIndex = 0;
@@ -9836,11 +9873,21 @@ game = {
           })
         }
       }));
-    /*const imgs_ = document.getElementsByTagName('img');
-    for (var i_ = 0; i_ < imgs_.length; i_++) {
-      console.log(imgs_[i_]);
-      imgs_[i_].setAttribute('draggable', false);
-    }*/
+
+    /*window.addEventListener('keyup', function(e) {
+      if (e.key == 'f' || e.keyCode == 70) {
+        var elem = document.body;
+
+        var fn = elem["requestFullScreen"] ||
+          elem["webkitRequestFullscreen"] ||
+          elem["mozRequestFullScreen"] ||
+          elem["msRequestFullScreen"];
+
+        if (fn) {
+          fn.call(elem);
+        }
+      }
+    });*/
   }
 };
 window.requestAnimationFrame = function() {
