@@ -1205,8 +1205,8 @@ player = {
     };
     this.view = a.view || 0;
     this.map = a.map || new maps.Map;
-    this.left = this.rotateLeft;
-    this.right = this.rotateRight
+    this.left = this.strafeLeft;
+    this.right = this.strafeRight
   },
   Weapon: function(a) {
     a || (a = {});
@@ -1330,23 +1330,25 @@ player.Player.prototype = {
     this.y = b
   },
   lookAt: function() {},
-  rotateLeft: function() {
+  rotateLeft: function(div_ = 1) {
     var a = this.direction.x;
-    this.direction.x = this.direction.x * cos(this.speed.rotation * game.timeFactor) - this.direction.y * sin(this.speed.rotation * game.timeFactor);
-    this.direction.y = a * sin(this.speed.rotation * game.timeFactor) + this.direction.y * cos(this.speed.rotation * game.timeFactor);
+    const b_ = this.speed.rotation * div_;
+    this.direction.x = this.direction.x * cos(b_ * game.timeFactor) - this.direction.y * sin(b_ * game.timeFactor);
+    this.direction.y = a * sin(b_ * game.timeFactor) + this.direction.y * cos(b_ * game.timeFactor);
     a = this.plane.x;
     this.plane.x =
-      this.plane.x * cos(this.speed.rotation * game.timeFactor) - this.plane.y * sin(this.speed.rotation * game.timeFactor);
-    this.plane.y = a * sin(this.speed.rotation * game.timeFactor) + this.plane.y * cos(this.speed.rotation * game.timeFactor)
+      this.plane.x * cos(b_ * game.timeFactor) - this.plane.y * sin(b_ * game.timeFactor);
+    this.plane.y = a * sin(b_ * game.timeFactor) + this.plane.y * cos(b_ * game.timeFactor);
   },
-  rotateRight: function() {
+  rotateRight: function(div_ = 1) {
     var a = this.direction.x;
-    this.direction.x = this.direction.x * cos(-this.speed.rotation * game.timeFactor) - this.direction.y * sin(-this.speed.rotation * game.timeFactor);
-    this.direction.y = a * sin(-this.speed.rotation * game.timeFactor) + this.direction.y * cos(-this.speed.rotation *
+    const b_ = this.speed.rotation * div_;
+    this.direction.x = this.direction.x * cos(-b_ * game.timeFactor) - this.direction.y * sin(-b_ * game.timeFactor);
+    this.direction.y = a * sin(-b_ * game.timeFactor) + this.direction.y * cos(-b_ *
       game.timeFactor);
     a = this.plane.x;
-    this.plane.x = this.plane.x * cos(-this.speed.rotation * game.timeFactor) - this.plane.y * sin(-this.speed.rotation * game.timeFactor);
-    this.plane.y = a * sin(-this.speed.rotation * game.timeFactor) + this.plane.y * cos(-this.speed.rotation * game.timeFactor)
+    this.plane.x = this.plane.x * cos(-b_ * game.timeFactor) - this.plane.y * sin(-b_ * game.timeFactor);
+    this.plane.y = a * sin(-b_ * game.timeFactor) + this.plane.y * cos(-b_ * game.timeFactor);
   },
   strafeLeft: function() {
     this.prevX = this.x;
@@ -6764,12 +6766,12 @@ raycast.Engine.prototype = {
 controller = {
   keys: {
     left: {
-      keyCode: [37],
+      keyCode: [65],
       single: !1,
       exception: ["right"]
     },
     right: {
-      keyCode: [39],
+      keyCode: [68],
       single: !1,
       exception: ["left"]
     },
@@ -6782,17 +6784,17 @@ controller = {
       single: !0
     },
     forward: {
-      keyCode: [38],
+      keyCode: [87],
       single: !1,
       exception: ["backward"]
     },
     backward: {
-      keyCode: [40],
+      keyCode: [83],
       single: !1,
       exception: ["forward"]
     },
     door: {
-      keyCode: [32],
+      keyCode: [69],
       single: !0
     },
     knife: {
@@ -6812,7 +6814,7 @@ controller = {
       single: !0
     },
     fire: {
-      keyCode: [17],
+      keyCode: [32],
       single: !1
     }
   },
@@ -7521,8 +7523,8 @@ game = {
                     return false
                   }),
                   strafe: utils.bind(game.client, function() {
-                    game.client.left = game.client.strafeLeft;
-                    game.client.right = game.client.strafeRight;
+                    game.client.left = game.client.rotateLeft;
+                    game.client.right = game.client.rotateRight;
                     return false
                   }),
                   run: utils.bind(game.client, function() {
@@ -7565,8 +7567,8 @@ game = {
                       false
                   },
                   strafe: utils.bind(game.client, function() {
-                    game.client.left = game.client.rotateLeft;
-                    game.client.right = game.client.rotateRight;
+                    game.client.left = game.client.strafeLeft;
+                    game.client.right = game.client.strafeRight;
                     return true
                   }),
                   run: utils.bind(game.client, function() {
@@ -7675,37 +7677,6 @@ game = {
     b()
   },
   showScreen: function(a, b, c) {
-    if (a == 'game') {
-      const container_ = document.body;
-      container_.requestPointerLock = container_.requestPointerLock ||
-        container_.mozRequestPointerLock ||
-        container_.webkitRequestPointerLock;
-
-      container_.onmousedown = function(e) {
-        if (e.button !== 0)
-          return;
-        container_.requestPointerLock();
-      }
-
-
-      const div_ = 8;
-      container_.onmousemove = function(e) {
-        if (e.movementX == 0)
-          return;
-        if (e.movementX > 0) {
-          for (var i = 0; i < e.movementX / div_; i++) {
-            game.client.right();
-          }
-          return;
-        }
-        if (e.movementX < 0) {
-          for (var i = 0; i < e.movementX / -div_; i++) {
-            game.client.left();
-          }
-          return;
-        }
-      }
-    }
     game.trackPage(a);
     game.requestHTML(a, function() {
       var d = document.getElementById(a);
@@ -7718,7 +7689,40 @@ game = {
           game.activeScreen = null;
           if (c) game.timeout = setTimeout(c, 500)
         }, b) : c && c()
-    })
+    });
+    if (a == 'game') {
+      const container_ = document.body;
+      container_.requestPointerLock = container_.requestPointerLock ||
+        container_.mozRequestPointerLock ||
+        container_.webkitRequestPointerLock;
+      container_.requestPointerLock();
+
+      var sens = 0.01;
+
+      setTimeout(function() {
+        container_.onmousedown = function(e) {
+          if (e.button == 2) {
+            container_.requestPointerLock();
+            game.client.door();
+          }
+          if (e.button == 0) {
+            game.client.getActiveWeapon().fire(game.client);
+          }
+        }
+        container_.onmousemove = function(e) {
+          if (e.movementX == 0)
+            return;
+          if (e.movementX > 0) {
+            game.client.rotateRight(e.movementX * sens);
+            return;
+          }
+          if (e.movementX < 0) {
+            game.client.rotateLeft(e.movementX * -sens);
+            return;
+          }
+        }
+      }, 1000);
+    }
   },
   hideScreen: function(a, b) {
     if (a == 'game') {
