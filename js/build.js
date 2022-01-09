@@ -13,6 +13,8 @@ max = Math.max;
 sin = Math.sin;
 cos = Math.cos;
 atan2 = Math.atan2;
+
+var sens = 0.01;
 utils = {
   directions: {
     north: {
@@ -7697,8 +7699,6 @@ game = {
         container_.webkitRequestPointerLock;
       container_.requestPointerLock();
 
-      var sens = 0.01;
-
       setTimeout(function() {
         container_.onmousedown = function(e) {
           if (e.button == 2) {
@@ -8279,6 +8279,16 @@ game = {
   },
   customize: function() {
     game.showScreen("customize", null, function() {
+      document.getElementById('change_sens').onclick = function(){
+        const user_input = prompt("Enter new Sensitivity: ");
+        const new_sens = parseFloat(user_input.replaceAll(',', '.').trim());
+        if (isNaN(new_sens)) {
+          alert('Not a number!');
+        }
+        else {
+          sens = new_sens / 100;
+        }
+      }
       localStorage.ctrl && (controller.keys = JSON.parse(localStorage.ctrl));
       var a = document.getElementById("customizecursor"),
         b = document.querySelectorAll("#customize table.option:not(.disabled)"),
